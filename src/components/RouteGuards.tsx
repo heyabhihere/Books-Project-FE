@@ -25,16 +25,6 @@ export function OtpRoute() {
 }
 
 /**
- * /update-profile — requires authentication (token set by verifyOtp signup flow).
- * Authenticated users who press back should go to /home, not /update-profile again.
- * We allow it as a protected route — users with a token can access it once.
- */
-export function UpdateProfileRoute() {
-  const { isAuthenticated } = useAuthStore();
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
-}
-
-/**
  * /forgot-password — must NOT be authenticated.
  * Authenticated users go to /home.
  */

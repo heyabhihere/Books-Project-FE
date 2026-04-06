@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { BookOpen, Plus, Search, Library, Filter, Loader2 } from 'lucide-react';
 import { booksApi, GENRE_MAP } from '../services/apiServices';
 import { useAuthStore } from '../store/authStore';
 import BookCard from '../components/BookCard';
 import BookForm from '../components/BookForm';
 import UserMenu from '../components/UserMenu';
+import ProfileModal from '../components/ProfileModal';
 
 interface Book {
   _id: string;
@@ -23,8 +24,12 @@ const LIMIT = 8;
 
 export default function HomePage() {
   const navigate = useNavigate();
-  useAuthStore();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuthStore();
   const [showForm, setShowForm] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(
+    searchParams.get('setupProfile') === 'true' || (user && (!user.name || user.name.trim() === ''))
+  );
   const [editBook, setEditBook] = useState<Book | null>(null);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -33,6 +38,13 @@ export default function HomePage() {
 
   // Sentinel ref — when this div enters the viewport, load next page
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get('setupProfile') === 'true') {
+      searchParams.delete('setupProfile');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   // Debounce search input — 400ms
   useEffect(() => {
@@ -213,6 +225,11 @@ export default function HomePage() {
       {/* Book Form Modal */}
       {showForm && (
         <BookForm onClose={handleCloseForm} editBook={editBook} />
+      )}
+
+      {/* Profile Form Modal */}
+      {showProfileModal && (
+        <ProfileModal onClose={() => setShowProfileModal(false)} />
       )}
     </div>
   );

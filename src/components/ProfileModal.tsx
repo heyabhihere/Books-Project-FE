@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { User, Calendar, Users, ArrowRight, CheckCircle } from 'lucide-react';
+import { User, Calendar, Users, ArrowRight, CheckCircle, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { authApi } from '../services/apiServices';
 import { useAuthStore } from '../store/authStore';
@@ -12,8 +11,11 @@ const GENDER_OPTIONS = [
   { value: 3, label: 'Other' },
 ];
 
-export default function UpdateProfilePage() {
-  const navigate = useNavigate();
+interface ProfileModalProps {
+  onClose: () => void;
+}
+
+export default function ProfileModal({ onClose }: ProfileModalProps) {
   const { setUser } = useAuthStore();
   const [name, setName] = useState('');
   const [gender, setGender] = useState<number | ''>('');
@@ -29,7 +31,7 @@ export default function UpdateProfilePage() {
     onSuccess: (data) => {
       setUser(data.data);
       toast.success('Profile updated!');
-      navigate('/home');
+      onClose();
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.error || 'Update failed');
@@ -42,21 +44,19 @@ export default function UpdateProfilePage() {
   };
 
   return (
-    <div className="auth-wrapper">
-      <div className="blob blob-1" />
-      <div className="blob blob-2" />
-      <div className="blob blob-3" />
-
-      <div className="auth-card wide-card">
-        <div className="profile-header">
-          <div className="profile-avatar-placeholder">
-            <User size={40} />
+    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal-card">
+        <div className="modal-header">
+          <div className="modal-title-wrap">
+            <User size={22} />
+            <h2>Complete your profile</h2>
           </div>
-          <h1 className="auth-title">Complete your profile</h1>
-          <p className="auth-subtitle">Tell us a bit about yourself</p>
+          <button id="modal-close-btn" className="modal-close" onClick={onClose}>
+            <X size={20} />
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form onSubmit={handleSubmit} className="modal-form" style={{ marginTop: '20px' }}>
           <div className="field-group">
             <label className="field-label">Full Name</label>
             <div className="field-input-wrap">
@@ -106,31 +106,35 @@ export default function UpdateProfilePage() {
             </div>
           </div>
 
-          <button
-            id="profile-submit-btn"
-            type="submit"
-            disabled={updateMutation.isPending}
-            className="btn-primary"
-          >
-            {updateMutation.isPending ? (
-              <span className="spinner" />
-            ) : (
-              <>
-                <CheckCircle size={18} />
-                Save & Continue
-                <ArrowRight size={18} />
-              </>
-            )}
-          </button>
+          <div className="modal-actions" style={{ flexDirection: 'column', gap: '10px' }}>
+            <button
+              id="profile-submit-btn"
+              type="submit"
+              disabled={updateMutation.isPending}
+              className="btn-primary"
+              style={{ width: '100%', justifyContent: 'center' }}
+            >
+              {updateMutation.isPending ? (
+                <span className="spinner" />
+              ) : (
+                <>
+                  <CheckCircle size={18} />
+                  Save & Continue
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+            <button
+              id="profile-skip-btn"
+              type="button"
+              className="btn-secondary"
+              onClick={onClose}
+              style={{ width: '100%', justifyContent: 'center', background: 'transparent', border: 'none', color: 'var(--text-secondary)' }}
+            >
+              Skip for now
+            </button>
+          </div>
         </form>
-
-        <button
-          id="profile-skip-btn"
-          className="skip-btn"
-          onClick={() => navigate('/home')}
-        >
-          Skip for now →
-        </button>
       </div>
     </div>
   );

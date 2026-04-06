@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, ShieldCheck, ArrowRight, RefreshCw } from 'lucide-react';
@@ -11,7 +11,6 @@ export default function OtpPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const otpType = searchParams.get('type') === '2' ? 2 : 1;
-
   const { pendingEmail, setAuth, setResetToken } = useAuthStore();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -23,7 +22,7 @@ export default function OtpPage() {
         // Signup flow — save auth and go to profile setup
         setAuth({ email: pendingEmail!, _id: data.user?._id || '' }, data.token);
         toast.success('Email verified! Complete your profile.');
-        navigate('/update-profile');
+        navigate('/home?setupProfile=true');
       } else {
         // Forgot-password flow — save the reset token and go to reset page
         setResetToken(data.resetToken);
@@ -69,6 +68,10 @@ export default function OtpPage() {
     if (otp.join('').length < 6) return toast.error('Enter all 6 digits');
     verifyMutation.mutate();
   };
+
+  useEffect(() => {
+    inputRefs.current[0]?.focus();
+  }, []);
 
   return (
     <div className="auth-wrapper">

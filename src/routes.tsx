@@ -2,12 +2,10 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import ExplorePage from './pages/ExplorePage';
 import AuthPage from './pages/AuthPage';
 import OtpPage from './pages/OtpPage';
-import UpdateProfilePage from './pages/UpdateProfilePage';
 import HomePage from './pages/HomePage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import { ProtectedRoute, PublicRoute, OtpRoute, UpdateProfileRoute, ResetPasswordRoute } from './components/RouteGuards';
-
+import { ProtectedRoute, PublicRoute, OtpRoute, ResetPasswordRoute } from './components/RouteGuards';
 export default function AppRoutes() {
     return (
         <Routes>
@@ -23,11 +21,6 @@ export default function AppRoutes() {
             {/* OTP — requires pendingEmail + not authenticated */}
             <Route element={<OtpRoute />}>
                 <Route path="/verify-otp" element={<OtpPage />} />
-            </Route>
-
-            {/* Update profile — requires authentication */}
-            <Route element={<UpdateProfileRoute />}>
-                <Route path="/update-profile" element={<UpdateProfilePage />} />
             </Route>
 
             {/* Reset password — requires resetToken + not authenticated */}
