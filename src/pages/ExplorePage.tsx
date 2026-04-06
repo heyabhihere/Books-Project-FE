@@ -14,6 +14,8 @@ interface Book {
   genre: number;
   price: number;
   image: string;
+  likes?: number;
+  isLiked?: boolean;
 }
 
 const LIMIT = 8;

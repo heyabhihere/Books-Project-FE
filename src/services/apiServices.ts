@@ -144,6 +144,16 @@ export const booksApi = {
     const { data } = await api.delete(`/books/${id}`);
     return data;
   },
+
+  likeBook: async (id: string) => {
+    const { data } = await api.put(`/books/${id}/like`);
+    return data;
+  },
+
+  getBookLikes: async (id: string) => {
+    const { data } = await api.get(`/books/${id}/likes`);
+    return data;
+  },
 };
 
 export const uploadApi = {

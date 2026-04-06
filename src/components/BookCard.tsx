@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Trash2, DollarSign, User2 } from 'lucide-react';
+import { Pencil, Trash2, User2, Heart, IndianRupee } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { booksApi, GENRE_MAP } from '../services/apiServices';
+import { useAuthStore } from '../store/authStore';
+import LikesModal from './LikesModal';
 
 interface Book {
   _id: string;
@@ -10,6 +13,8 @@ interface Book {
   genre: number;
   price: number;
   image: string;
+  likes?: number;
+  isLiked?: boolean;
 }
 
 interface BookCardProps {
@@ -19,7 +24,55 @@ interface BookCardProps {
 }
 
 export default function BookCard({ book, onEdit, readOnly = false }: BookCardProps) {
+  const [showLikesModal, setShowLikesModal] = useState(false);
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+
+  const isLiked = book.isLiked || false;
+
+  const likeMutation = useMutation({
+    mutationFn: () => booksApi.likeBook(book._id),
+    onSuccess: (data) => {
+      queryClient.setQueriesData({ queryKey: ['books'] }, (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any) => ({
+            ...page,
+            list: page.list?.map((b: any) =>
+              b._id === book._id ? { ...b, likes: data.book.likes, isLiked: data.hasLiked } : b
+            ),
+          })),
+        };
+      });
+
+      queryClient.setQueriesData({ queryKey: ['all-books'] }, (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any) => ({
+            ...page,
+            list: page.list?.map((b: any) =>
+              b._id === book._id ? { ...b, likes: data.book.likes, isLiked: data.hasLiked } : b
+            ),
+          })),
+        };
+      });
+
+      toast.success(data.message || (data.hasLiked ? 'Book liked!' : 'Book unliked!'));
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to toggle like');
+    },
+  });
+
+  const handleLike = () => {
+    if (!user) {
+      toast.error('Please login to like books');
+      return;
+    }
+    likeMutation.mutate();
+  };
 
   const deleteMutation = useMutation({
     mutationFn: () => booksApi.deleteBook(book._id),
@@ -62,8 +115,42 @@ export default function BookCard({ book, onEdit, readOnly = false }: BookCardPro
             {book.author}
           </span>
           <span className="book-meta-item">
-            <DollarSign size={13} />
+            <IndianRupee size={13} />
             {book.price.toFixed(2)}
+          </span>
+          <span className="book-meta-item" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <button
+              onClick={handleLike}
+              disabled={likeMutation.isPending}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '4px',
+                color: isLiked ? '#ef4444' : 'inherit'
+              }}
+              title={isLiked ? 'Unlike' : 'Like'}
+            >
+              <Heart size={16} fill={isLiked ? 'currentColor' : 'none'} color={isLiked ? '#ef4444' : 'currentColor'} />
+            </button>
+            <span
+              onClick={() => {
+                if (!readOnly && book.likes && book.likes > 0) {
+                  setShowLikesModal(true);
+                } else if (!readOnly && (!book.likes || book.likes === 0)) {
+                  toast.success('No one has liked this book yet');
+                }
+              }}
+              style={{
+                fontSize: '13px',
+                cursor: !readOnly ? 'pointer' : 'default',
+                textDecoration: !readOnly ? 'underline' : 'none'
+              }}
+            >
+              {book.likes || 0}
+            </span>
           </span>
         </div>
 
@@ -93,6 +180,10 @@ export default function BookCard({ book, onEdit, readOnly = false }: BookCardPro
           </div>
         )}
       </div>
+
+      {showLikesModal && (
+        <LikesModal bookId={book._id} onClose={() => setShowLikesModal(false)} />
+      )}
     </div>
   );
 }

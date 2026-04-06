@@ -292,7 +292,6 @@ export default function UserMenu() {
   const handleLogout = () => {
     logout();
     toast.success('Logged out');
-    navigate('/');
   };
 
   const openModal = (m: 'profile' | 'password') => {

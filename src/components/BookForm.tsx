@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, BookOpen, User, DollarSign, Tag, ImageIcon, Upload, Loader2 } from 'lucide-react';
+import { X, BookOpen, User, Tag, ImageIcon, Upload, Loader2, IndianRupee } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { booksApi, uploadApi, GENRE_MAP } from '../services/apiServices';
 
@@ -28,12 +28,12 @@ export default function BookForm({ onClose, editBook }: BookFormProps) {
 
   useEffect(() => {
     if (editBook) {
-      setBookName(editBook.bookName);
-      setAuthor(editBook.author);
-      setGenre(editBook.genre);
-      setPrice(String(editBook.price));
-      setImage(editBook.image);
-      setImagePreview(editBook.image);
+      setBookName(editBook?.bookName);
+      setAuthor(editBook?.author);
+      setGenre(editBook?.genre);
+      setPrice(String(editBook?.price));
+      setImage(editBook?.image);
+      setImagePreview(editBook?.image);
     }
   }, [editBook]);
 
@@ -181,7 +181,7 @@ export default function BookForm({ onClose, editBook }: BookFormProps) {
               <div className="field-group">
                 <label className="field-label">Price ($)</label>
                 <div className="field-input-wrap">
-                  <DollarSign className="field-icon" size={16} />
+                  <IndianRupee className="field-icon" size={16} />
                   <input
                     id="book-price-input"
                     type="number"

@@ -4,7 +4,7 @@ import { useAuthStore } from '../store/authStore';
 /** /home and other authenticated pages — redirect to / if not logged in */
 export function ProtectedRoute() {
   const { isAuthenticated } = useAuthStore();
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+  return isAuthenticated ? <Outlet /> : <Navigate to="/" replace />;
 }
 
 /** / (login/signup) — redirect to /home if already logged in */
